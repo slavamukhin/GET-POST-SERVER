@@ -1,0 +1,20 @@
+{
+  "name": "get-post-server",
+  "version": "1.0.0",
+  "description": "readme.md",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Mukhin V.A.",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.5.0",
+    "eslint-config-google": "^0.10.0",
+    "nodemon": "^1.18.4"
+  },
+  "dependencies": {
+    "winston": "^3.1.0"
+  }
+}
