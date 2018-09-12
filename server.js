@@ -75,20 +75,8 @@ const server = http.createServer((req, res) => {
 });
 
 function sendFile(stream, res) {
-    stream.on('readable', write);
-    function write() {
-        let fileContent = stream.read();
-        if (fileContent && !res.write(fileContent)) {
-            stream.removeListener('readable', write);
-            res.once('drain', function() {
-                stream.on('readable', write);
-                write();
-            })
-        }
-    }
-    stream.on('end', function() {
-        res.end('');
-    });
+    stream.pipe(res);
+
     stream.on('error', function (err) {
         if (err && err.code === 'ENOENT') {
             log.error('File not found method GET');
@@ -96,12 +84,7 @@ function sendFile(stream, res) {
             res.end('File not found');
         }
     });
-    stream.on('open', function() {
-        console.log('open');
-    });
-    stream.on('close', function() {
-        console.log('close');
-    });
+
     res.on('close', function() {
         stream.destroy();
     })
