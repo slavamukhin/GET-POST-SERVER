@@ -18,23 +18,7 @@ const server = http.createServer((req, res) => {
         let file = urlParse.path.split('/')[urlParse.path.split('/').length - 1];
         if (file.includes('.') && file !== '' && file !== 'favicon.ico') {
             const stream = fs.ReadStream(PATH + file, {encoding: 'utf-8'});
-            let allFile = '';
-            stream
-                .on('readable', function() {
-                    const data = stream.read();
-                    if (data !== null) {
-                        console.log('part', data);
-                        allFile += data;
-                        res.write(allFile);
-                        allFile = '';
-                    }
-                })
-                .on('error', function (err) {
-                    if (err) throw err;
-                })
-                .on('end', function() {
-                    res.end();
-                })
+            sendFile(stream, res);
         }
         // res.end('Hello client your say GET');
     } else if (req.method === 'POST') {
@@ -89,5 +73,38 @@ const server = http.createServer((req, res) => {
         res.end('Hello client! What are your want?');
     }
 });
+
+function sendFile(stream, res) {
+    stream.on('readable', write);
+    function write() {
+        let fileContent = stream.read();
+        if (fileContent && !res.write(fileContent)) {
+            stream.removeListener('readable', write);
+            res.once('drain', function() {
+                stream.on('readable', write);
+                write();
+            })
+        }
+    }
+    stream.on('end', function() {
+        res.end('');
+    });
+    stream.on('error', function (err) {
+        if (err && err.code === 'ENOENT') {
+            log.error('File not found method GET');
+            res.statusCode = 404;
+            res.end('File not found');
+        }
+    });
+    stream.on('open', function() {
+        console.log('open');
+    });
+    stream.on('close', function() {
+        console.log('close');
+    });
+    res.on('close', function() {
+        stream.destroy();
+    })
+}
 
 module.exports = server;
